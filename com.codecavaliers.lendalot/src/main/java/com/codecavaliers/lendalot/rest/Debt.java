@@ -10,39 +10,39 @@ import java.util.Iterator;
  * @author nicu
  *
  */
-public class Renter {
+public class Debt {
 
 	private String number;
-	private Collection<Product> products;
+	private Collection<Renter> renters;
 
 	/**
-	 * @return the toNumber
+	 * @return the fromNumber
 	 */
 	public String getNumber() {
 		return number;
 	}
 
 	/**
-	 * @param toNumber
-	 *            the toNumber to set
+	 * @param fromNumber
+	 *            the fromNumber to set
 	 */
-	public void setNumber(String toNumber) {
-		this.number = toNumber;
+	public void setNumber(String fromNumber) {
+		this.number = fromNumber;
 	}
 
 	/**
-	 * @return the products
+	 * @return the renters
 	 */
-	public Collection<Product> getProducts() {
-		return products;
+	public Collection<Renter> getRenters() {
+		return renters;
 	}
 
 	/**
-	 * @param products
-	 *            the products to set
+	 * @param renters
+	 *            the renters to set
 	 */
-	public void setProducts(Collection<Product> products) {
-		this.products = products;
+	public void setRenters(Collection<Renter> renters) {
+		this.renters = renters;
 	}
 
 	/*
@@ -58,16 +58,16 @@ public class Renter {
 		strBuilder.append("\"number\"").append(":")
 				.append("\"" + number + "\"");
 		strBuilder.append(",");
-		strBuilder.append("\"products\"").append(":").append("[");
+		strBuilder.append("\"renters\"").append(":").append("[");
 
-		if (products != null) {
+		if (renters != null) {
 
-			Iterator<Product> it = products.iterator();
+			Iterator<Renter> it = renters.iterator();
 
 			while (it.hasNext()) {
-				Product product = it.next();
+				Renter renter = it.next();
 
-				strBuilder.append(product.toString());
+				strBuilder.append(renter.toString());
 
 				if (it.hasNext()) {
 					strBuilder.append(",");
