@@ -18,6 +18,7 @@ import com.mongodb.MongoClient;
 /**
  * @author nicu
  *
+ * Used for extracting the required information from the data base
  */
 public class LendALotServiceUtil {
 
@@ -36,6 +37,8 @@ public class LendALotServiceUtil {
 	 * @param toColName
 	 * @return
 	 * @throws Exception
+	 * 
+	 * returns an object that contains all the information about the things that people borrowed
 	 */
 	public static Debt getDebts(String nr, String fromColName, String toColName)
 			throws Exception {
@@ -110,6 +113,8 @@ public class LendALotServiceUtil {
 	/**
 	 * @param debts
 	 * @throws Exception
+	 * 
+	 * Replace the information from the data base with the one received
 	 */
 	public static void saveDebts(Debt debts) throws Exception {
 
@@ -121,6 +126,9 @@ public class LendALotServiceUtil {
 			DB db = mongo.getDB("lendalot");
 
 			DBCollection table = db.getCollection("lendalot");
+			
+			//clears the collection
+			table.remove(new BasicDBObject());
 
 			for (Renter renter : debts.getRenters()) {
 

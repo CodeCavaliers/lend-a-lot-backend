@@ -45,10 +45,8 @@ public class Debt {
 		this.renters = renters;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
+	/**
+	 * Converts the object to a json string
 	 */
 	public String toString() {
 

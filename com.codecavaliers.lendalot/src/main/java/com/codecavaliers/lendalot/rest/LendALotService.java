@@ -21,6 +21,12 @@ public class LendALotService {
 
 	private static final String ERROR_MESSAGE = "Error";
 
+	/**
+	 * @param fNumber
+	 * @return
+	 * 
+	 * Produces a json that contains all the information about the things that other people borrowed from you
+	 */
 	@GET
 	@Path("/restoreDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -45,6 +51,12 @@ public class LendALotService {
 				.build();
 	}
 
+	/**
+	 * @param fNumber
+	 * @return
+	 * 
+	 * Produces a json that contains all the information about the things that you borrowed from other people
+	 */
 	@GET
 	@Path("/restoreMyDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -69,6 +81,12 @@ public class LendALotService {
 				.build();
 	}
 
+	/**
+	 * @param debts
+	 * @return
+	 * 
+	 * Replace the information from the data base with the one received
+	 */
 	@POST
 	@Path("/persistDebts")
 	@Consumes(MediaType.APPLICATION_JSON)

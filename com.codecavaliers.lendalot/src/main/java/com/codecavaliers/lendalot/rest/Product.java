@@ -42,10 +42,8 @@ public class Product {
 		this.quantity = quantity;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
+	/**
+	 * Converts the object to a json string
 	 */
 	public String toString() {
 
