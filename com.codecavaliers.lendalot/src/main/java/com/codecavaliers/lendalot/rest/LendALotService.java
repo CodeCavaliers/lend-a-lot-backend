@@ -54,7 +54,7 @@ public class LendALotService {
 	/**
 	 * @param fNumber
 	 * @return
-	 * 
+	 * Copy-paste much? semnat boogie
 	 * Produces a json that contains all the information about the things that you borrowed from other people
 	 */
 	@GET
