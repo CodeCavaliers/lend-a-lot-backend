@@ -34,6 +34,11 @@
 			<artifactId>mongo-java-driver</artifactId>
 			<version>2.10.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.bitbucket.b_c</groupId>
+			<artifactId>jose4j</artifactId>
+			<version>0.5.5</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>lendalot</finalName>

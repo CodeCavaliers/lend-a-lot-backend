@@ -5,6 +5,7 @@ package com.codecavaliers.lendalot.rest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,22 +26,29 @@ public class LendALotService {
 	 * @param fNumber
 	 * @return
 	 * 
-	 * Produces a json that contains all the information about the things that other people borrowed from you
+	 *         Produces a json that contains all the information about the
+	 *         things that other people borrowed from you
 	 */
 	@GET
 	@Path("/restoreDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response restoreDebts(@PathParam("param") String fNumber) {
+	public Response restoreDebts(@HeaderParam("token") String token,
+			@PathParam("param") String fNumber) {
 
 		int statusCode;
 		Debt debts = null;
 
 		try {
 
-			debts = LendALotServiceUtil.getDebts(fNumber,
-					LendALotServiceUtil.COL_NAME_FROM_NUMBER,
-					LendALotServiceUtil.COL_NAME_TO_NUMBER);
-			statusCode = 200;
+			if (LendALotServiceUtil.validateToken(token, fNumber)) {
+
+				debts = LendALotServiceUtil.getDebts(fNumber,
+						LendALotServiceUtil.COL_NAME_FROM_NUMBER,
+						LendALotServiceUtil.COL_NAME_TO_NUMBER);
+				statusCode = 200;
+			} else {
+				statusCode = 401;
+			}
 
 		} catch (Exception e) {
 			statusCode = 500;
@@ -55,22 +63,30 @@ public class LendALotService {
 	 * @param fNumber
 	 * @return
 	 * 
-	 * Produces a json that contains all the information about the things that you borrowed from other people
+	 *         Produces a json that contains all the information about the
+	 *         things that you borrowed from other people
 	 */
 	@GET
 	@Path("/restoreMyDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response restoreMyDebts(@PathParam("param") String fNumber) {
+	public Response restoreMyDebts(@HeaderParam("token") String token,
+			@PathParam("param") String fNumber) {
 
 		int statusCode;
 		Debt debts = null;
 
 		try {
 
-			debts = LendALotServiceUtil.getDebts(fNumber,
-					LendALotServiceUtil.COL_NAME_TO_NUMBER,
-					LendALotServiceUtil.COL_NAME_FROM_NUMBER);
-			statusCode = 200;
+			if (LendALotServiceUtil.validateToken(token, fNumber)) {
+
+				debts = LendALotServiceUtil.getDebts(fNumber,
+						LendALotServiceUtil.COL_NAME_TO_NUMBER,
+						LendALotServiceUtil.COL_NAME_FROM_NUMBER);
+				statusCode = 200;
+
+			} else {
+				statusCode = 401;
+			}
 
 		} catch (Exception e) {
 			statusCode = 500;
@@ -85,25 +101,66 @@ public class LendALotService {
 	 * @param debts
 	 * @return
 	 * 
-	 * Replace the information from the data base with the one received
+	 *         Replace the information from the data base with the one received
 	 */
 	@POST
 	@Path("/persistDebts")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response persistDebts(Debt debts) {
+	public Response persistDebts(@HeaderParam("token") String token, Debt debts) {
 
 		int statusCode;
 
 		try {
 
-			LendALotServiceUtil.saveDebts(debts);
+			if (LendALotServiceUtil.validateToken(token, debts.getNumber())) {
 
-			statusCode = 201;
+				LendALotServiceUtil.saveDebts(debts);
+
+				statusCode = 201;
+
+			} else {
+				statusCode = 401;
+			}
 
 		} catch (Exception e) {
 			statusCode = 500;
 		}
 
 		return Response.status(statusCode).build();
+	}
+
+	/**
+	 * @param username
+	 * @param phoneNumber
+	 * @return
+	 */
+	@Path("/authenticate")
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response authenticateCredentials(
+			@HeaderParam("username") String username,
+			@HeaderParam("phoneNumber") String phoneNumber) {
+
+		String responseMessage = null;
+		String token = null;
+		Integer responseCode = null;
+
+		if (username == null || phoneNumber == null) {
+			responseMessage = "Username or phone number is missing!!!";
+			responseCode = 401;
+		}
+
+		try {
+			token = LendALotServiceUtil.getToken(username, phoneNumber);
+			responseMessage = "Success";
+			responseCode = 200;
+
+		} catch (Exception e) {
+			responseMessage = "Error";
+			responseCode = 500;
+		}
+
+		return Response.status(responseCode).header("token", token)
+				.entity(responseMessage).build();
 	}
 }

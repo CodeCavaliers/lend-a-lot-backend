@@ -17,8 +17,12 @@ import com.sun.jersey.api.client.WebResource;
  */
 public class LendALotServiceTest {
 
+	private static final String TEST_PHONE_NUMBER = "123456789";
+	private static final String TEST_USER_NAME = "testName";
 	private static String URL = "http://localhost:8080/lendalot/rest/lendalot/";
-	private static String IMPUT = "{\"number\":\"123456789\",\"renters\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
+	private static String IMPUT = "{\"number\":\""
+			+ TEST_PHONE_NUMBER
+			+ "\",\"renters\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
 
 	/**
 	 * 
@@ -30,8 +34,10 @@ public class LendALotServiceTest {
 
 		WebResource webResource = client.resource(URL + "persistDebts");
 
-		ClientResponse response = webResource.type("application/json").post(
-				ClientResponse.class, IMPUT);
+		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
+
+		ClientResponse response = webResource.type("application/json")
+				.header("token", token).post(ClientResponse.class, IMPUT);
 
 		assertTrue(response.getStatus() == 201);
 	}
@@ -44,11 +50,13 @@ public class LendALotServiceTest {
 
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL
-				+ "restoreDebts/123456789");
+		WebResource webResource = client.resource(URL + "restoreDebts/"
+				+ TEST_PHONE_NUMBER);
 
-		ClientResponse response = webResource.accept("application/json").get(
-				ClientResponse.class);
+		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
+
+		ClientResponse response = webResource.accept("application/json")
+				.header("token", token).get(ClientResponse.class);
 
 		assertTrue(response.getStatus() == 200);
 	}
@@ -61,12 +69,77 @@ public class LendALotServiceTest {
 
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL
-				+ "restoreMyDebts/987654322");
+		WebResource webResource = client.resource(URL + "restoreMyDebts/"
+				+ TEST_PHONE_NUMBER);
 
-		ClientResponse response = webResource.accept("application/json").get(
-				ClientResponse.class);
+		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
+
+		ClientResponse response = webResource.accept("application/json")
+				.header("token", token).get(ClientResponse.class);
 
 		assertTrue(response.getStatus() == 200);
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	public void testAuthenticateCredentials() {
+
+		Client client = Client.create();
+
+		WebResource webResource = client.resource(URL + "authenticate");
+
+		ClientResponse response = webResource.accept("application/json")
+				.header("username", TEST_USER_NAME)
+				.header("phoneNumber", TEST_PHONE_NUMBER)
+				.get(ClientResponse.class);
+
+		assertTrue(response.getStatus() == 200);
+	}
+	
+	/**
+	 * 
+	 */
+	@Test
+	public void testMultiple() {
+
+		String token1 = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
+		String token2 = getToken("test2", "987654321");
+		
+		Client client = Client.create();
+
+		WebResource webResource = client.resource(URL + "restoreDebts/"
+				+ TEST_PHONE_NUMBER);
+
+		ClientResponse response = webResource.accept("application/json")
+				.header("token", token1).get(ClientResponse.class);
+
+		assertTrue(response.getStatus() == 200);
+		
+		webResource = client.resource(URL + "restoreDebts/"
+				+ "987654321");
+
+		response = webResource.accept("application/json")
+				.header("token", token2).get(ClientResponse.class);
+		
+		assertTrue(response.getStatus() == 200);
+	}
+
+	/**
+	 * @return
+	 */
+	private String getToken(String username, String phoneNumber) {
+
+		Client client = Client.create();
+
+		WebResource webResource = client.resource(URL + "authenticate");
+
+		ClientResponse response = webResource.accept("application/json")
+				.header("username", username)
+				.header("phoneNumber", phoneNumber)
+				.get(ClientResponse.class);
+
+		return response.getHeaders().getFirst("token");
 	}
 }
