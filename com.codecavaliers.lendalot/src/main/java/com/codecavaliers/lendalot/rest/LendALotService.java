@@ -30,7 +30,7 @@ public class LendALotService {
 	 *         things that other people borrowed from you
 	 */
 	@GET
-	@Path("/restoreDebts/{param}")
+	@Path("/debts/getDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response restoreDebts(@HeaderParam("token") String token,
 			@PathParam("param") String fNumber) {
@@ -67,7 +67,7 @@ public class LendALotService {
 	 *         things that you borrowed from other people
 	 */
 	@GET
-	@Path("/restoreMyDebts/{param}")
+	@Path("/debts/getMyDebts/{param}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response restoreMyDebts(@HeaderParam("token") String token,
 			@PathParam("param") String fNumber) {
@@ -104,7 +104,7 @@ public class LendALotService {
 	 *         Replace the information from the data base with the one received
 	 */
 	@POST
-	@Path("/persistDebts")
+	@Path("/debts/setDebts")
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response persistDebts(@HeaderParam("token") String token, Debt debts) {
 
