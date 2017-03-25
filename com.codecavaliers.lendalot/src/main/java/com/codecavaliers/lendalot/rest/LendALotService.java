@@ -67,7 +67,7 @@ public class LendALotService {
 	 *         things that you borrowed from other people
 	 */
 	@GET
-	@Path("/debts/getMyDebts/{param}")
+	@Path("/debts/getMyDebts/{param}") // nu asa man.... /debts/{param} ii suficient
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response restoreMyDebts(@HeaderParam("token") String token,
 			@PathParam("param") String fNumber) {
@@ -104,7 +104,8 @@ public class LendALotService {
 	 *         Replace the information from the data base with the one received
 	 */
 	@POST
-	@Path("/debts/setDebts")
+	@Path("/debts/setDebts") // nu trebuie sa setteri si getteri la paths ffs. 
+	//faptul ca faci POST ii suficient
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response persistDebts(@HeaderParam("token") String token, Debt debts) {
 
