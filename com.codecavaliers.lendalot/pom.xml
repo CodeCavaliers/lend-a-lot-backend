@@ -39,6 +39,11 @@
 			<artifactId>jose4j</artifactId>
 			<version>0.5.5</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring</artifactId>
+			<version>2.5.6</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>lendalot</finalName>

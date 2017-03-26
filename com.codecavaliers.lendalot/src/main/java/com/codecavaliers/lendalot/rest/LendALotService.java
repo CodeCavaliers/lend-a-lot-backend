@@ -20,6 +20,8 @@ import javax.ws.rs.core.Response;
 @Path("/lendalot")
 public class LendALotService {
 
+	private static final String VALUE_MISSING_MESSAGE = "Username or phone number is missing!!!";
+	private static final String SUCCESS_MESSAGE = "Success";
 	private static final String ERROR_MESSAGE = "Error";
 
 	/**
@@ -36,15 +38,18 @@ public class LendALotService {
 			@PathParam("param") String fNumber) {
 
 		int statusCode;
-		Debt debts = null;
+		AggregatedDebts debts = null;
 
 		try {
+			// check if the phone number exist in the database and if it is
+			// linked to the issuer name that is contained in the token
+			if (LendALotServiceHelper.validateToken(token, fNumber)) {
 
-			if (LendALotServiceUtil.validateToken(token, fNumber)) {
-
-				debts = LendALotServiceUtil.getDebts(fNumber,
-						LendALotServiceUtil.COL_NAME_FROM_NUMBER,
-						LendALotServiceUtil.COL_NAME_TO_NUMBER);
+				// returns an object that contain all the debts that were linked
+				// to that phone number
+				debts = LendALotServiceHelper.getDebts(fNumber,
+						LendALotServiceHelper.COL_NAME_FROM_NUMBER,
+						LendALotServiceHelper.COL_NAME_TO_NUMBER);
 				statusCode = 200;
 			} else {
 				statusCode = 401;
@@ -55,8 +60,7 @@ public class LendALotService {
 		}
 
 		return Response.status(statusCode)
-				.entity(debts == null ? ERROR_MESSAGE : debts.toString())
-				.build();
+				.entity(debts == null ? ERROR_MESSAGE : debts.toJson()).build();
 	}
 
 	/**
@@ -73,15 +77,18 @@ public class LendALotService {
 			@PathParam("param") String fNumber) {
 
 		int statusCode;
-		Debt debts = null;
+		AggregatedDebts debts = null;
 
 		try {
+			// check if the phone number exist in the database and if it is
+			// linked to the issuer name that is contained in the token
+			if (LendALotServiceHelper.validateToken(token, fNumber)) {
 
-			if (LendALotServiceUtil.validateToken(token, fNumber)) {
-
-				debts = LendALotServiceUtil.getDebts(fNumber,
-						LendALotServiceUtil.COL_NAME_TO_NUMBER,
-						LendALotServiceUtil.COL_NAME_FROM_NUMBER);
+				// returns an object that contain all the debts that were linked
+				// to that phone number
+				debts = LendALotServiceHelper.getDebts(fNumber,
+						LendALotServiceHelper.COL_NAME_TO_NUMBER,
+						LendALotServiceHelper.COL_NAME_FROM_NUMBER);
 				statusCode = 200;
 
 			} else {
@@ -93,8 +100,7 @@ public class LendALotService {
 		}
 
 		return Response.status(statusCode)
-				.entity(debts == null ? ERROR_MESSAGE : debts.toString())
-				.build();
+				.entity(debts == null ? ERROR_MESSAGE : debts.toJson()).build();
 	}
 
 	/**
@@ -106,15 +112,18 @@ public class LendALotService {
 	@POST
 	@Path("/debts/")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response persistDebts(@HeaderParam("token") String token, Debt debts) {
+	public Response persistDebts(@HeaderParam("token") String token,
+			AggregatedDebts debts) {
 
 		int statusCode;
 
 		try {
+			// check if the phone number exist in the database and if it is
+			// linked to the issuer name that is contained in the token
+			if (LendALotServiceHelper.validateToken(token, debts.getNumber())) {
 
-			if (LendALotServiceUtil.validateToken(token, debts.getNumber())) {
-
-				LendALotServiceUtil.saveDebts(debts);
+				// replace the deps from the data base with the ones received
+				LendALotServiceHelper.saveDebts(debts);
 
 				statusCode = 201;
 
@@ -133,6 +142,9 @@ public class LendALotService {
 	 * @param username
 	 * @param phoneNumber
 	 * @return
+	 * 
+	 *         Saves the user name and the phone number if they don't exist and
+	 *         returns a token
 	 */
 	@Path("/authenticate")
 	@GET
@@ -145,18 +157,21 @@ public class LendALotService {
 		String token = null;
 		Integer responseCode = null;
 
+		// both parameters must contain values
 		if (username == null || phoneNumber == null) {
-			responseMessage = "Username or phone number is missing!!!";
+			responseMessage = VALUE_MISSING_MESSAGE;
 			responseCode = 401;
 		}
 
 		try {
-			token = LendALotServiceUtil.getToken(username, phoneNumber);
-			responseMessage = "Success";
+			// save the phone number and the user name in the database and
+			// returns a token that contains the user name as the issuer
+			token = LendALotServiceHelper.getToken(username, phoneNumber);
+			responseMessage = SUCCESS_MESSAGE;
 			responseCode = 200;
 
 		} catch (Exception e) {
-			responseMessage = "Error";
+			responseMessage = ERROR_MESSAGE;
 			responseCode = 500;
 		}
 

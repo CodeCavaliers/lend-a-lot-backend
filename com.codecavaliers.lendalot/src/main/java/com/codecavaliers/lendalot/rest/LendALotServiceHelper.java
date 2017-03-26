@@ -17,6 +17,8 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -29,7 +31,7 @@ import com.mongodb.DBObject;
  *
  *         Used for extracting the required information from the data base
  */
-public class LendALotServiceUtil {
+public class LendALotServiceHelper {
 
 	private static final String ISSUER_NAME = "lendalot-backend";
 	public static final String COL_NAME_FROM_NUMBER = "fromNumber";
@@ -44,6 +46,9 @@ public class LendALotServiceUtil {
 	private static final String USERS_TABLE_NAME = "users";
 
 	private static RsaJsonWebKey JWK = null;
+	private static ApplicationContext context = new ClassPathXmlApplicationContext(
+			new String[] { "Spring-Module.xml" });
+	private static MongoDB mongoDB = (MongoDB) context.getBean("MongoDB");
 
 	static {
 		try {
@@ -64,45 +69,43 @@ public class LendALotServiceUtil {
 	 *             returns an object that contains all the information about the
 	 *             things that people borrowed
 	 */
-	public static Debt getDebts(String nr, String fromColName, String toColName)
-			throws Exception {
+	public static AggregatedDebts getDebts(String nr, String fromColName,
+			String toColName) throws Exception {
 
-		DB db = MongoDBSingleton.getInstance().getDatabase();
+		DB db = mongoDB.getDatabase();
 		DBCollection table = db.getCollection(RENTERS_TABLE_NAME);
 
 		BasicDBObject query = new BasicDBObject(fromColName, nr);
 
+		// get all the debts that are linked to received phone number
 		DBCursor cursor = table.find(query);
 
-		Map<String, Renter> renters = new HashMap<String, Renter>();
+		Map<String, Person> renters = new HashMap<String, Person>();
 
+		// aggregate the debts
 		while (cursor.hasNext()) {
 
 			DBObject row = cursor.next();
 
 			String number = (String) row.get(toColName);
 			String product = (String) row
-					.get(LendALotServiceUtil.COL_NAME_PRODUCT);
+					.get(LendALotServiceHelper.COL_NAME_PRODUCT);
 			Integer quantity = (Integer) row
-					.get(LendALotServiceUtil.COL_NAME_QUANTITY);
+					.get(LendALotServiceHelper.COL_NAME_QUANTITY);
 
-			Renter renter = renters.get(number);
+			Person renter = renters.get(number);
 
+			// if there isn't a person linked to that number, create one
 			if (renter == null) {
-				renter = new Renter();
-				renter.setNumber(number);
+				renter = new Person(number, new HashSet<Product>());
 				renters.put(number, renter);
 			}
 
 			Collection<Product> products = renter.getProducts();
 
-			if (products == null) {
-				products = new HashSet<Product>();
-				renter.setProducts(products);
-			}
-
 			Product foundProduct = null;
 
+			// returns the product with the given name
 			for (Product prd : products) {
 				if (prd.getProduct().equals(product)) {
 					foundProduct = prd;
@@ -110,27 +113,17 @@ public class LendALotServiceUtil {
 				}
 			}
 
+			// if the product wasn't found, that means that it's a new product
 			if (foundProduct == null) {
-				foundProduct = new Product();
+				foundProduct = new Product(product, 0);
 
-				foundProduct.setProduct(product);
-				foundProduct.setQuantity(0);
 				products.add(foundProduct);
 			}
 
-			Integer prdQuatity = foundProduct.getQuantity();
-
-			prdQuatity += quantity;
-
-			foundProduct.setQuantity(prdQuatity);
+			foundProduct.addQuantity(quantity);
 		}
 
-		Debt debts = new Debt();
-
-		debts.setNumber(nr);
-		debts.setRenters(renters.values());
-
-		return debts;
+		return new AggregatedDebts(nr, renters.values());
 	}
 
 	/**
@@ -140,19 +133,19 @@ public class LendALotServiceUtil {
 	 *             Replace the information from the data base with the one
 	 *             received
 	 */
-	public static void saveDebts(Debt debts) throws Exception {
+	public static void saveDebts(AggregatedDebts debts) throws Exception {
 
-		if (debts != null && debts.getRenters() != null
-				&& !debts.getRenters().isEmpty()) {
+		if (debts != null && debts.getPersons() != null
+				&& !debts.getPersons().isEmpty()) {
 
-			DB db = MongoDBSingleton.getInstance().getDatabase();
+			DB db = mongoDB.getDatabase();
 
 			DBCollection table = db.getCollection(RENTERS_TABLE_NAME);
 
 			// clears the collection
 			table.remove(new BasicDBObject());
 
-			for (Renter renter : debts.getRenters()) {
+			for (Person renter : debts.getPersons()) {
 
 				Collection<Product> products = renter.getProducts();
 
@@ -179,11 +172,14 @@ public class LendALotServiceUtil {
 	 * @param phoneNumber
 	 * @return
 	 * @throws Exception
+	 * 
+	 *             Save the phone number and the user name in the database and
+	 *             returns a token that contains the user name as the issuer
 	 */
 	public static String getToken(String username, String phoneNumber)
 			throws Exception {
 
-		DB db = MongoDBSingleton.getInstance().getDatabase();
+		DB db = mongoDB.getDatabase();
 		DBCollection table = db.getCollection(USERS_TABLE_NAME);
 
 		BasicDBObject fields = new BasicDBObject();
@@ -193,6 +189,7 @@ public class LendALotServiceUtil {
 
 		DBCursor cursor = table.find(fields);
 
+		// add them to the data base if they don't exist
 		if (cursor.size() == 0) {
 
 			BasicDBObject document = new BasicDBObject();
@@ -227,6 +224,9 @@ public class LendALotServiceUtil {
 	 * @param phoneNumber
 	 * @return
 	 * @throws Exception
+	 * 
+	 *             Checks if the phone number exist in the database and if it is
+	 *             linked to the issuer name that is contained in the token
 	 */
 	public static boolean validateToken(String token, String phoneNumber)
 			throws Exception {
@@ -235,7 +235,7 @@ public class LendALotServiceUtil {
 
 		if (token != null && phoneNumber != null) {
 
-			DB db = MongoDBSingleton.getInstance().getDatabase();
+			DB db = mongoDB.getDatabase();
 			DBCollection table = db.getCollection(USERS_TABLE_NAME);
 
 			BasicDBObject fields = new BasicDBObject();

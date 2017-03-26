@@ -10,10 +10,26 @@ import java.util.Iterator;
  * @author nicu
  *
  */
-public class Renter {
+public class Person {
 
 	private String number;
 	private Collection<Product> products;
+	
+	/**
+	 * We need an empty constructor to instantiate from JSON object
+	 */
+	public Person() {
+		
+	}
+
+	/**
+	 * @param number
+	 * @param products
+	 */
+	public Person(String number, Collection<Product> products) {
+		this.number = number;
+		this.products = products;
+	}
 
 	/**
 	 * @return the toNumber
@@ -48,7 +64,7 @@ public class Renter {
 	/**
 	 * Converts the object to a json string
 	 */
-	public String toString() {
+	public String toJson() {
 
 		StringBuilder strBuilder = new StringBuilder();
 
@@ -65,7 +81,7 @@ public class Renter {
 			while (it.hasNext()) {
 				Product product = it.next();
 
-				strBuilder.append(product.toString());
+				strBuilder.append(product.toJson());
 
 				if (it.hasNext()) {
 					strBuilder.append(",");

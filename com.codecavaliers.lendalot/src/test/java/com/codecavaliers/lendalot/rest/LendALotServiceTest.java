@@ -22,7 +22,7 @@ public class LendALotServiceTest {
 	private static String URL = "http://localhost:8080/lendalot/rest/lendalot/";
 	private static String IMPUT = "{\"number\":\""
 			+ TEST_PHONE_NUMBER
-			+ "\",\"renters\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
+			+ "\",\"persons\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
 
 	/**
 	 * 
@@ -32,7 +32,7 @@ public class LendALotServiceTest {
 
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL + "persistDebts");
+		WebResource webResource = client.resource(URL + "debts");
 
 		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
 
@@ -50,7 +50,7 @@ public class LendALotServiceTest {
 
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL + "restoreDebts/"
+		WebResource webResource = client.resource(URL + "debts/"
 				+ TEST_PHONE_NUMBER);
 
 		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
@@ -69,7 +69,7 @@ public class LendALotServiceTest {
 
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL + "restoreMyDebts/"
+		WebResource webResource = client.resource(URL + "myDebts/"
 				+ TEST_PHONE_NUMBER);
 
 		String token = getToken(TEST_USER_NAME, TEST_PHONE_NUMBER);
@@ -109,7 +109,7 @@ public class LendALotServiceTest {
 		
 		Client client = Client.create();
 
-		WebResource webResource = client.resource(URL + "restoreDebts/"
+		WebResource webResource = client.resource(URL + "debts/"
 				+ TEST_PHONE_NUMBER);
 
 		ClientResponse response = webResource.accept("application/json")
@@ -117,7 +117,7 @@ public class LendALotServiceTest {
 
 		assertTrue(response.getStatus() == 200);
 		
-		webResource = client.resource(URL + "restoreDebts/"
+		webResource = client.resource(URL + "debts/"
 				+ "987654321");
 
 		response = webResource.accept("application/json")

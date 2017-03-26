@@ -10,7 +10,24 @@ package com.codecavaliers.lendalot.rest;
 public class Product {
 
 	private String product;
-	private Integer quantity;
+	private int quantity;
+	
+	/**
+	 * We need an empty constructor to instantiate from JSON object
+	 */
+	public Product() {
+		
+	}
+
+	/**
+	 * @param product
+	 * @param quantity
+	 */
+	public Product(String product, int quantity) {
+		super();
+		this.product = product;
+		this.quantity = quantity;
+	}
 
 	/**
 	 * @return the product
@@ -30,7 +47,7 @@ public class Product {
 	/**
 	 * @return the quantity
 	 */
-	public Integer getQuantity() {
+	public int getQuantity() {
 		return quantity;
 	}
 
@@ -38,14 +55,21 @@ public class Product {
 	 * @param quantity
 	 *            the quantity to set
 	 */
-	public void setQuantity(Integer quantity) {
+	public void setQuantity(int quantity) {
 		this.quantity = quantity;
+	}
+	
+	/**
+	 * @param quantity
+	 */
+	public void addQuantity(int quantity) {
+		this.quantity += quantity;
 	}
 
 	/**
 	 * Converts the object to a json string
 	 */
-	public String toString() {
+	public String toJson() {
 
 		StringBuilder strBuilder = new StringBuilder();
 
