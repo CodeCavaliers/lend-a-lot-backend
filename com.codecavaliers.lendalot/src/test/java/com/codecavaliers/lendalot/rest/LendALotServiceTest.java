@@ -22,7 +22,7 @@ public class LendALotServiceTest {
 	private static String URL = "http://localhost:8080/lendalot/rest/lendalot/";
 	private static String IMPUT = "{\"number\":\""
 			+ TEST_PHONE_NUMBER
-			+ "\",\"persons\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
+			+ "\",\"renters\":[{\"number\":\"987654322\",\"products\":[{\"product\":\"product2\",\"quantity\":\"20\"}]},{\"number\":\"987654321\",\"products\":[{\"product\":\"product1\",\"quantity\":\"60\"},{\"product\":\"product3\",\"quantity\":\"20\"}]}]}";
 
 	/**
 	 * 
