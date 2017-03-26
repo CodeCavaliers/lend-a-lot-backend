@@ -6,6 +6,8 @@ package com.codecavaliers.lendalot.rest;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 /**
  * @author nicu
  *
@@ -49,6 +51,7 @@ public class AggregatedDebts {
 	/**
 	 * @return the persons
 	 */
+	@JsonProperty("renters")
 	public Collection<Person> getPersons() {
 		return persons;
 	}
@@ -57,6 +60,7 @@ public class AggregatedDebts {
 	 * @param persons
 	 *            the persons to set
 	 */
+	@JsonProperty("renters")
 	public void setPersons(Collection<Person> persons) {
 		this.persons = persons;
 	}
@@ -72,7 +76,7 @@ public class AggregatedDebts {
 		strBuilder.append("\"number\"").append(":")
 				.append("\"" + number + "\"");
 		strBuilder.append(",");
-		strBuilder.append("\"persons\"").append(":").append("[");
+		strBuilder.append("\"renters\"").append(":").append("[");
 
 		if (persons != null) {
 
